@@ -4,7 +4,7 @@
  * @author novafacile OÜ
  * @copyright Copyright (c) 2021 - 2026 by novafacile OÜ
  * @license AGPL-3.0
- * @version 2.1.1
+ * @version 2.1.3
  * @link https://novagallery.org
  */
 namespace novafacile;
@@ -29,7 +29,7 @@ class app extends novaPage {
   public function footerText(){
     global $config;
     $config->set('footerTextOriginal',$config->get('footerText'));
-    $branding = '<br>Powered by <a href="https://novagallery.org" target="_blank">novaGallery</a><br><br>';
+    $branding = '<br>Powered by <a href="http://novagallery.org" target="_blank">novaGallery</a><br><br>';
     if($config->get('footerText')){
       $config->set('footerTextOriginal', $config->get('footerText'));
       $config->set('footerText', $config->get('footerText').$branding);
@@ -113,6 +113,8 @@ class app extends novaPage {
   public function transformFilename($filename, array $replace = [], bool $ucwords = true) : string {
     // remove extension
     $filename = pathinfo($filename, PATHINFO_FILENAME);
+    // encode HTML special chars before replacements to prevent XSS
+    $filename = htmlspecialchars($filename, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     foreach ($replace as $key => $value) {
       $filename = str_replace($key, $value, $filename);
     }
@@ -129,6 +131,9 @@ class app extends novaPage {
     if($onlyBasename){
       $string = pathinfo($string, PATHINFO_FILENAME);
     }
+    // encode HTML special chars before replacements to prevent XSS;
+    // replace values (e.g. '&raquo;') are applied afterwards and are not double-encoded
+    $string = htmlspecialchars($string, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     // replace token
     foreach ($replace as $key => $value) {
       $string = str_replace($key, $value, $string);
@@ -246,6 +251,7 @@ class app extends novaPage {
     $value = str_replace('/../', '', $value);
     $value = str_replace('<', '&lt;', $value);
     $value = str_replace('>', '&gt;', $value);
+    $value = str_replace('"', '&quot;', $value);
     return $value;
   }
 
